@@ -17,7 +17,8 @@ The playbooks migrates specific applications built on top of jboss-amq-63 image 
 ### Imort the AMQ63 Templates
 
 TODO
+*  ```ansible-playbook upgrate-ocp-templates.yml
 
-### Upgrade a specific application
+### Upgrade a specific application/project
 
-*  ```ansible-playbook upgrate_amq62_to_amq63.yml -e namespace=myProject -e buildConfig=app1BC-e deploymentConfig=broker-amq62-amq -e "image=jboss-amq-63:1.1" ```
+*  ```ansible-playbook upgrade-broker.yml -e namespace=myProject -e buildConfig=app1BC-e deploymentConfig=broker-amq62-amq -e "image=jboss-amq-63:1.1" ```
