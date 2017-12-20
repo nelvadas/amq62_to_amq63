@@ -28,9 +28,9 @@ TODO
   ```ansible-playbook upgrade-broker.yml -e namespace=myProject -e buildConfig=app1BC-e deploymentConfig=broker-amq62-amq -e image='jboss-amq-63:1.1' ```
 
 The following parameters are expected
-* *namespace* : the project namespace 
+* ```namespace``` : the project namespace 
 * ```buildConfig```: The application BuildConfig with amq62
 * ```deploymentConfig```: The app deployment config
-* oc_cluster: Openshift Cluster address , default Minishift host  ``` https://192.168.99.100:8443```
-* oc_user: user to authenticate with   default ```admin```
-* oc_password: user password: default to ```admin``` 
+* ```oc_cluster```: Openshift Cluster address , default Minishift host  ``` https://192.168.99.100:8443```
+* ```oc_user```: user to authenticate with   default ```admin```
+* ```oc_password```: user password: default to ```admin``` 
