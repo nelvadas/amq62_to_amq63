@@ -112,8 +112,9 @@
     command: "oc create -f {{tmp_dir}}/{{deploymentConfig}}-drainer.yaml -n {{namespace}}"
     register: oc_create_drainer_resp
 
-
-
+  - name: "Start a new build "
+    command: "oc start-build bc/{{ buildConfig }}   -n {{namespace}}"
+    ignore_errors: True
 
 
 
