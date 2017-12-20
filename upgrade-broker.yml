@@ -35,6 +35,17 @@
     register: result
         
 
+  - name: "Check who am I"
+    command: oc whoami
+    register: oc_whoami
+    ignore_errors: True
+    changed_when: false
+ 
+  - fail:
+      msg: "This playbook requires to be system:admin"
+    when: "oc_whoami.stdout != 'admin' and oc_whoami.stdout != 'system:admin'"
+
+
   - name: "Ensure objects exists in project {{namespace}} "
     command: " oc get {{ item }} -n {{namespace}}  "
     register: oc_get_obj
@@ -57,6 +68,54 @@
       - { name: "{{deploymentConfig}}", kind: "dc"}
       - { name: "{{ buildConfig}}",kind: "bc"}
 
-  - name: "Patching the Build config with new AMQ Version "
+  - name: "Create AMQ Service Account"
+    command: "oc create sa amq-service-account -n {{ namespace }}"
+    ignore_errors: True
+
+  - name: "Grant view access to amq-service-account in project {{namespace}}"
+    command: "oc policy add-role-to-user view system:serviceaccount:{{namespace}}:amq-service-account"
+    ignore_errors: True 
+
+  - name: "Patching the Build config with new AMQ image :  {{image}} "
     shell: "./scripts/patchBuildConfig.sh {{buildConfig}} '{{image}}' {{namespace}}"
     register: oc_patch_bc_result
+
+
+  - name: "Patching the Deployment config with the amq-service-account "
+    shell: "./scripts/patchDeploymentConfig.sh {{ deploymentConfig }} 'amq-service-account' {{namespace}}"
+    register: oc_patch_dc_result
+
+  - name: "Get AMQ environment variables AMQ_USER"
+    shell: "oc env dc/{{ deploymentConfig }} --list  -n {{namespace}} | grep AMQ_USER | awk -F= '{ print $2 }'"
+    register: amquser
+
+  - name: "Get AMQ environment variables AMQ_PASSWORD" 
+    shell: "oc env dc/{{ deploymentConfig }} --list -n {{namespace}} | grep AMQ_PASSWORD | awk -F= '{ print $2 }'"
+    register: amqpwd
+
+  - name: "Get AMQ environment variable AMQ_MESH_SERVICE_NAME"
+    shell: "oc env dc/{{ deploymentConfig }} --list -n {{namespace}} | grep AMQ_MESH_SERVICE_NAME | awk -F= '{ print $2 }'"
+    register: amqmeshsvc
+
+  - name: " Get Persistence Volume Clain defined on dc/{{ deploymentConfig }}"
+    shell: "oc get dc/{{ deploymentConfig }} -o yaml -n {{namespace}} | grep 'claimName:' | awk -F: '{ print $2 }'"
+    register: pvc
+
+  - name: "Parameterized drainer template {{ deploymentConfig }}-drainer.yaml"
+    template:
+      src: "./templates/j2/drainer-amq63.j2"
+      dest: "{{tmp_dir}}/{{deploymentConfig}}-drainer.yaml"
+    with_items:
+      - { dc: "{{deploymentConfig}}",image: "{{image}}",amquser: "{{amquser.stdout}}",amqpassword: "{{amqpwd.stdout}}",amqmeshservice: "{{amqmeshsvc.stdout}}",pvc: "{{pvc.stdout}}"  }
+
+  - name: "Create Drainer DC"
+    command: "oc create -f {{tmp_dir}}/{{deploymentConfig}}-drainer.yaml -n {{namespace}}"
+    register: oc_create_drainer_resp
+
+
+
+
+
+
+
+
