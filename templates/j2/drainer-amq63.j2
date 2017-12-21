@@ -39,9 +39,9 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-        image: jboss-amq-63
+        image: {{item.containerimage}}
         imagePullPolicy: Always
-        name: broker-amq63-drainer
+        name: {{ item.dc }}-drainer
         ports:
         - containerPort: 8778
           name: jolokia
@@ -72,8 +72,8 @@ spec:
       - {{ item.dc }}-drainer
       from:
         kind: ImageStreamTag
-        name: "{{ item.image }}"
-        namespace: openshift
+        name: "{{ item.imagestream }}"
+        namespace: {{ item.namespace }}
     type: ImageChange
   - type: ConfigChange
 
