@@ -19,9 +19,12 @@ The playbooks migrates specific applications built on top of jboss-amq-63 image 
 ## Usage
 
 ### Imort the AMQ63 Templates
+This playbook install/replace existing amq63 template on your OCP installation with the templates provided at 
+  ``` https://github.com/jboss-openshift/application-templates/tree/ose-${VERSION}/amq``
 
-TODO
-  ```ansible-playbook upgrate-ocp-templates.yml```
+ Use the following command to install tempaltes from ```https://github.com/jboss-openshift/application-templates/tree/ose-v1.4.5/amq```
+
+  ```ansible-playbook update-amq63-templates.yml -e version=1.4.5```
 
 ### Upgrade a specific application/project
 

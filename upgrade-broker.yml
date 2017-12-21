@@ -37,14 +37,7 @@
 
   - name: "Check who am I"
     command: oc whoami
-    register: oc_whoami
-    ignore_errors: True
-    changed_when: false
  
-  - fail:
-      msg: "This playbook requires to be system:admin"
-    when: "oc_whoami.stdout != 'admin' and oc_whoami.stdout != 'system:admin'"
-
 
   - name: "Ensure objects exists in project {{namespace}} "
     command: " oc get {{ item }} -n {{namespace}}  "

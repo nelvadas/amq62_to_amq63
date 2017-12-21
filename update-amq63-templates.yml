@@ -1,0 +1,49 @@
+---
+# This playbook is used to update amq63 on your openshift cluster
+   #  Usage  ansible-playbook -i hosts update-amq63-templates.yaml
+   #                       -e "version=1.4.5" 
+   #                       -e "oc_cluster=https://mycluster:8443"
+   #                       -e "oc_user=admin"
+   #                       -e "oc_password=admin"
+  # Sample command line
+  #         ansible-playbook -i hosts  update-amq63-templates.yaml -e version=1.4.5 
+  #
+
+- hosts: localhost
+  vars:
+    ocp_cluster: "{{oc_cluster|default('https://192.168.99.100:8443')}}"
+    ocp_cluster_user: "{{oc_user|default('admin')}}"
+    ocp_cluster_pwd: "{{oc_password|default('admin')}}"
+    tplversion:  "{{version|default('1.4.5')}}"
+  tasks:
+
+
+  - name: "oc login "
+    command: "oc login {{ocp_cluster}} -u {{ocp_cluster_user}} -p {{ocp_cluster_pwd}}  -n openshift"
+    register: result
+        
+
+  - name: "Check who am I"
+    command: oc whoami
+    register: oc_whoami
+    ignore_errors: True
+    changed_when: false
+ 
+  - fail:
+      msg: "This playbook requires to be system:admin"
+    when: "oc_whoami.stdout != 'admin' and oc_whoami.stdout != 'system:admin'"
+
+
+  - name: "Update AMQ template with version :  {{tplversion}} "
+    shell: "./scripts/update-amq3-templates.sh {{tplversion}} "
+    register: oc_update-amq3_result
+ 
+  - debug:
+      var: oc_update-amq3_result
+      verbosity: 4
+
+
+
+
+
+
